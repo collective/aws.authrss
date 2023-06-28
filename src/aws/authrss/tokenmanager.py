@@ -2,7 +2,7 @@
 
 from aws.authrss.interfaces import ITokenManager
 from persistent import Persistent
-from persistent.dict import PersistentDict
+from BTrees.OOBTree import OOBTree
 from plone.uuid.interfaces import IUUIDGenerator
 from zope.component import getUtility
 from zope.interface import implementer
@@ -17,9 +17,9 @@ class DefaultTokenManager(Persistent):
 
     def clear(self):
         # {token: user id, ...}
-        self._token2uid = PersistentDict()
+        self._token2uid = OOBTree()
         # {user id: token, ...}
-        self._uid2token = PersistentDict()
+        self._uid2token = OOBTree()
 
     def userIdForToken(self, token):
         """See ITokensManager"""
