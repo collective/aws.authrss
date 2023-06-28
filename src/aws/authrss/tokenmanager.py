@@ -1,8 +1,8 @@
 """The default tokens manager"""
 
 from aws.authrss.interfaces import ITokenManager
-from persistent import Persistent
 from BTrees.OOBTree import OOBTree
+from persistent import Persistent
 from plone.uuid.interfaces import IUUIDGenerator
 from zope.component import getUtility
 from zope.interface import implementer
