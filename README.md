@@ -36,9 +36,54 @@ eggs =
   aws.authrss
 ```
 
+
 ### Development site
 
-The development package at Github comes with a suitable `buildout.cfg`. See [Links](#links). You just need to clone that repository and play the usual `python bootstrap.py bin/buildout`.
+```
+python3 -m venv ./venv
+```
+
+```
+source venv/bin/activate
+```
+
+```
+pip install mxdev zope.testrunner
+```
+
+```
+mxdev -c mx.ini
+```
+
+```
+pip install -r requirements-mxdev.txt
+```
+
+### run a single Test
+
+```
+zope-testrunner -pvc --test-path=src -t TestUseCasesFunctionalTest
+```
+
+### run all Tests
+
+```
+zope-testrunner -pvc --test-path=src
+```
+
+### Testing with tox
+
+install tox
+
+```
+pip install tox
+```
+
+run the tests
+
+```
+tox
+```
 
 ### In Site Setup
 
