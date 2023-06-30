@@ -9,6 +9,7 @@ from plone.app.testing import TEST_USER_NAME
 from plone.app.testing import TEST_USER_PASSWORD
 from plone.testing.z2 import Browser
 
+import transaction
 import unittest
 
 
@@ -17,8 +18,6 @@ class TestUseCasesFunctionalTest(unittest.TestCase):
 
     def anonymous_browser(self):
         """Browser of anonymous"""
-        import transaction
-
         transaction.commit()
         browser = Browser(self.layer["app"])
         browser.handleErrors = False
@@ -72,17 +71,110 @@ class TestUseCasesFunctionalTest(unittest.TestCase):
     def setUp(self):
         self.portal = self.layer["portal"]
         self.request = self.layer["request"]
+        self.portal_url = self.portal.absolute_url()
+        self.portal_workflow = self.portal.portal_workflow
+        # Test User is a Manager
+        setRoles(self.portal, TEST_USER_ID, ["Member", "Manager"])
         self.setUpContent()
 
     def tearDown(self):
-        del self.portal["foo"]
+        del self.portal[self.foo_collection.id]
+        del self.portal[self.foo_folder.id]
 
     def setUpContent(self):
+        from plone.base.interfaces.syndication import IFeedSettings
+
+        # enable syndication globally
         mgr_browser = self.manager_browser()
-        mgr_browser.open(self.portal.absolute_url() + "/++add++Folder")
+        mgr_browser.open(f"{self.portal_url}/syndication-controlpanel")
+        mgr_browser.getControl(name="form.widgets.allowed:list").value = ["selected"]
+        mgr_browser.getControl(name="form.widgets.default_enabled:list").value = [
+            "selected"
+        ]
+        mgr_browser.getControl(
+            name="form.widgets.show_syndication_button:list"
+        ).value = ["selected"]
+        submit = mgr_browser.getControl(name="form.buttons.save")
+        submit.click()
+
+        # add a folder foo
+        mgr_browser = self.manager_browser()
+        mgr_browser.open(f"{self.portal_url}/++add++Folder")
         mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = "Foo"
         mgr_browser.getControl(name="form.buttons.save").click()
         mgr_browser.getLink(id="workflow-transition-publish").click()
+
+        self.foo_folder = self.portal.foo
+        self.foo_folder_url = self.foo_folder.absolute_url()
+
+        # configure syndication at folder
+        mgr_browser = self.manager_browser()
+        mgr_browser.open(self.foo_folder_url)
+        mgr_browser.getLink("Syndication").click()
+
+        # ordered selection widget needs js and some clicks
+        # we set the feed_types programmatically
+        feedsettings = IFeedSettings(self.foo_folder)
+        feedsettings.feed_types = ("RSS",)
+        transaction.commit()
+
+        # add a collection/topic
+        mgr_browser.open(f"{self.portal_url}/++add++Collection")
+        mgr_browser.getControl(
+            name="form.widgets.IDublinCore.title"
+        ).value = "Foo Collection"
+        mgr_browser.getControl(name="form.buttons.save").click()
+        mgr_browser.getLink(id="workflow-transition-publish").click()
+
+        self.foo_collection = self.portal["foo-collection"]
+        self.foo_collection_url = self.foo_collection.absolute_url()
+
+        # We set this topic's criteria such both above created documents appear in it.
+        # Note that I do this with the API and not with the browser (too noisy)
+        self.foo_collection.setQuery(
+            [
+                {
+                    "i": "portal_type",
+                    "o": "plone.app.querystring.operation.string.is",
+                    "v": "Document",
+                }
+            ]
+        )
+        transaction.commit()
+
+        # configure syndication at collection
+        mgr_browser = self.manager_browser()
+        mgr_browser.open(self.foo_collection_url)
+        mgr_browser.getLink("Syndication").click()
+
+        # ordered selection widget needs js and some clicks
+        # we set the feed_types programmatically
+        feedsettings = IFeedSettings(self.foo_collection)
+        feedsettings.feed_types = ("RSS",)
+        transaction.commit()
+
+        # Let's add some content
+        # As the foo folder has no content, there's nothing to view in the RSS feeds,
+        # either the anonymous one or the private RSS feed for the member.
+        mgr_browser.open(f"{self.foo_folder_url}/++add++Document")
+        mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = "Title1"
+        mgr_browser.getControl(
+            name="form.widgets.IDublinCore.description"
+        ).value = "Description 1"
+        mgr_browser.getControl(name="form.buttons.save").click()
+        mgr_browser.getLink(id="workflow-transition-publish").click()
+        self.doc1 = self.portal.foo.title1
+        self.doc1_url = self.doc1.absolute_url()
+
+        mgr_browser.open(f"{self.foo_folder_url}/++add++Document")
+        mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = "Title2"
+        mgr_browser.getControl(
+            name="form.widgets.IDublinCore.description"
+        ).value = "Description 2"
+        mgr_browser.getControl(name="form.buttons.save").click()
+        mgr_browser.getLink(id="workflow-transition-submit").click()
+        self.doc2 = self.portal.foo.title2
+        self.doc2_url = self.doc2.absolute_url()
 
     def test_isSiteSyndicationAllowed(self):
         """Checking global syndication settings"""
@@ -106,241 +198,198 @@ class TestUseCasesFunctionalTest(unittest.TestCase):
         self.assertIn("rss_token", portal_actions["user"].keys())
         self.assertIn("rss", portal_actions["document_actions"].keys())
 
-    def test_use_cases(self):
+    def test_FolderFoo(self):
+        mgr_browser = self.manager_browser()
+        mgr_browser.open(self.foo_folder_url)
+        self.assertEqual(mgr_browser.url, self.foo_folder_url)
+        self.assertEqual(
+            self.portal_workflow.getInfoFor(self.foo_folder, "review_state"),
+            "published",
+        )
+
+    def test_FolderFooFeedSettings(self):
         from plone.base.interfaces.syndication import IFeedSettings
+
+        feedsettings = IFeedSettings(self.foo_folder)
+        self.assertTrue(feedsettings.enabled)
+        self.assertFalse(feedsettings.render_body)
+        self.assertTupleEqual(("RSS",), feedsettings.feed_types)
+        self.assertEqual(15, feedsettings.max_items)
+
+    def test_CollectionFoo(self):
+        mgr_browser = self.manager_browser()
+        mgr_browser.open(self.foo_collection_url)
+        self.assertTrue(mgr_browser.title.startswith("Foo Collection"))
+        self.assertEqual(
+            self.portal_workflow.getInfoFor(self.foo_collection, "review_state"),
+            "published",
+        )
+
+    def test_CollectionFooFeedSettings(self):
+        from plone.base.interfaces.syndication import IFeedSettings
+
+        feedsettings = IFeedSettings(self.foo_collection)
+        self.assertTrue(feedsettings.enabled)
+        self.assertFalse(feedsettings.render_body)
+        self.assertTupleEqual(("RSS",), feedsettings.feed_types)
+        self.assertEqual(15, feedsettings.max_items)
+
+    def test_ReviewStatesOfDocuments(self):
+        mgr_browser = self.manager_browser()
+        mgr_browser.open(self.doc1_url)
+        self.assertEqual(mgr_browser.url, self.doc1.absolute_url())
+        self.assertEqual(
+            self.portal_workflow.getInfoFor(self.doc1, "review_state"),
+            "published",
+        )
+
+        mgr_browser = self.manager_browser()
+        mgr_browser.open(self.doc2_url)
+        self.assertEqual(mgr_browser.url, self.doc2.absolute_url())
+        self.assertEqual(
+            self.portal_workflow.getInfoFor(self.doc2, "review_state"),
+            "pending",
+        )
+
+    def test_AnonymousCanSeeDocument1(self):
+        # The anonymous may see the 'Title1' document
+        anon_browser = self.anonymous_browser()
+        anon_browser.open(self.doc1_url)
+        self.assertTrue(anon_browser.title.startswith("Title1"))
+
+    def test_AnonymousCantSeeDocument2(self):
         from zExceptions.unauthorized import Unauthorized
 
-        setRoles(self.portal, TEST_USER_ID, ["Authenticated", "Member", "Reviewer"])
-        portal_workflow = self.portal.portal_workflow
-
-        mgr_browser = self.manager_browser()
-        mgr_browser.open(f"{self.portal.absolute_url()}/syndication-controlpanel")
-        mgr_browser.getControl(name="form.widgets.allowed:list").value = ["selected"]
-        mgr_browser.getControl(name="form.widgets.default_enabled:list").value = [
-            "selected"
-        ]
-        mgr_browser.getControl(
-            name="form.widgets.show_syndication_button:list"
-        ).value = ["selected"]
-        submit = mgr_browser.getControl(name="form.buttons.save")
-        submit.click()
-
-        foo_folder_url = self.portal.foo.absolute_url()
-
-        mgr_browser = self.manager_browser()
-        mgr_browser.open(foo_folder_url)
-        self.assertTrue(mgr_browser.url.endswith("/plone/foo"))
-        mgr_browser.getLink("Syndication").click()
-        mgr_browser.getControl(name="form.widgets.enabled:list").value = ["selected"]
-        submit = mgr_browser.getControl(name="form.buttons.save")
-        submit.click()
-
-        feedsettings = IFeedSettings(self.portal.foo)
-        self.assertTrue(feedsettings.enabled)
-
-        # Because we don't have javascript enabled, we lost feed_types, configure it again
-        feedsettings.feed_types = ("RSS",)
-
-        # the anonymous should have the usual legacy RSS URL
+        # The anonymous can't access the 'Title2' document
         anon_browser = self.anonymous_browser()
-        anon_browser.open(foo_folder_url)
+        with self.assertRaises(Unauthorized):
+            anon_browser.open(self.doc2_url)
+
+    def test_anonymousCanAccessFooFolderAndSeeRSSLink(self):
+        anon_browser = self.anonymous_browser()
+        anon_browser.open(self.foo_folder_url)
+
         self.assertTrue(anon_browser.title.startswith("Foo"))
 
-        anon_browser = self.anonymous_browser()
-        anon_browser.open(foo_folder_url)
         tree = etree.HTML(anon_browser.contents)
-
         links = tree.xpath("//li[@id='document-action-rss']/a")
         self.assertEqual(1, len(links))
         anon_rss_url = links[0].attrib["href"]
-        self.assertTrue(anon_rss_url.endswith("/plone/foo/RSS"))
 
+        self.assertEqual(anon_rss_url, f"{self.portal_url}/foo/RSS")
+
+    def test_authenticatedCanAccessFooFolderAndSeeTokenRSSLink(self):
         # An authenticated user could see the RSS link with his own private token
         member_browser = self.member_browser()
-        member_browser.open(foo_folder_url)
+        member_browser.open(self.foo_folder_url)
         tree = etree.HTML(member_browser.contents)
         links = tree.xpath("//li[@id='document-action-rss']/a")
         self.assertEqual(1, len(links))
         member_rss_url = links[0].attrib["href"]
-        self.assertIn("/plone/foo/AUTH-RSS?token=", member_rss_url)
 
-        # Let's add some content
-        # As the foo folder has no content, there's nothing to view in the RSS feeds,
-        # either the anonymous one or the private RSS feed for the member.
-
-        # Adding a public 'Title 1' document
-        mgr_browser.open(f"{foo_folder_url}/++add++Document")
-        mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = "Title 1"
-        mgr_browser.getControl(
-            name="form.widgets.IDublinCore.description"
-        ).value = "Description 1"
-        mgr_browser.getControl(name="form.buttons.save").click()
-        mgr_browser.getLink(id="workflow-transition-publish").click()
-
-        title1_doc_url = self.portal.foo["title-1"].absolute_url()
-        self.assertIn("title-1", self.portal.foo.keys())
-        title1_doc = self.portal.foo["title-1"]
-
-        # check as Manager
-        setRoles(self.portal, TEST_USER_ID, ["Member", "Manager"])
-        self.assertEqual(
-            portal_workflow.getInfoFor(title1_doc, "review_state"), "published"
+        self.assertTrue(
+            member_rss_url.startswith(f"{self.portal_url}/foo/AUTH-RSS?token=")
         )
 
-        # switch back to Reviewer Role
-        setRoles(self.portal, TEST_USER_ID, ["Member", "Reviewer"])
+        # check is token present
+        token = member_rss_url.replace(f"{self.portal_url}/foo/AUTH-RSS?token=", "")
+        self.assertEqual(len(token), 32)
 
-        # Adding a restricted 'Title 2' document
-        # Same as above but users must be reviewers to see this one::
+    def test_main_feature(self):
+        """Viewing the RSS feed of the Foo folder
+        Okay, we are now testing the main feature of this component and show that when
+        viewing a private feed as anonymous, this feed shows also the elements the
+        authenticated member is allowed to view
+        """
+        from zExceptions.unauthorized import Unauthorized
 
-        mgr_browser.open(foo_folder_url + "/++add++Document")
-        mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = "Title 2"
-        mgr_browser.getControl(
-            name="form.widgets.IDublinCore.description"
-        ).value = "Description 2"
-        mgr_browser.getControl(name="form.buttons.save").click()
-        mgr_browser.getLink(id="workflow-transition-submit").click()
+        # TEST the feed of folder
+        # get the rss url of the member
+        member_browser = self.member_browser()
+        member_browser.open(self.foo_folder_url)
+        tree = etree.HTML(member_browser.contents)
+        links = tree.xpath("//li[@id='document-action-rss']/a")
+        member_rss_url = links[0].attrib["href"]
 
-        title2_doc_url = self.portal.foo["title-2"].absolute_url()
-        self.assertIn("title-2", self.portal.foo.keys())
-        title2_doc = self.portal.foo["title-2"]
-
-        # check as Manager
-        setRoles(self.portal, TEST_USER_ID, ["Member", "Manager"])
-        self.assertEqual(
-            portal_workflow.getInfoFor(title2_doc, "review_state"), "pending"
-        )
-
-        # switch back to Reviewer Role
-        setRoles(self.portal, TEST_USER_ID, ["Member", "Reviewer"])
-
-        # The anonymous may see the 'Title 1' document
-        anon_browser.open(title1_doc_url)
-        self.assertEqual(title1_doc_url, anon_browser.url)
-
-        with self.assertRaises(Unauthorized):
-            anon_browser.open(title2_doc_url)
-
-        # The member may see both documents
-        member_browser.open(title1_doc_url)
-        self.assertEqual(title1_doc_url, member_browser.url)
-
-        member_browser.open(title2_doc_url)
-        self.assertEqual(title2_doc_url, member_browser.url)
-
-        # Viewing the RSS feed of the Foo folder
-        # Okay, we are now testing the main feature of this component and show that when
-        # viewing a private feed as anonymous, this feed shows also the elements the
-        # authenticated member is allowed to view
-
+        # open the member rss url as anonymous
+        # doc2 should be in the feed
+        anon_browser = self.anonymous_browser()
         anon_browser.open(member_rss_url)
         feed = anon_browser.contents
         feed_urls = self.rss_feed_urls(feed)
+        self.assertListEqual([self.doc1_url, self.doc2_url], feed_urls)
 
-        self.assertListEqual(
-            [
-                f"{self.portal.absolute_url()}/foo/title-1",
-                f"{self.portal.absolute_url()}/foo/title-2",
-            ],
-            feed_urls,
-        )
-
-        # But he cannot view the last URL of the feed
+        # But anonymous cannot view the last URL of the feed
         with self.assertRaises(Unauthorized):
             anon_browser.open(feed_urls[-1])
 
-        # Checking the syndication of a Topic / Collection
+        # TEST the collection
 
-        # This works for a topic too. Let's make a topic for which these two documents
-        # match, without workflow state criterion.
-
-        # Creating the topic
-        # We create a topic named 'foo-topic' and publish it.
-
-        mgr_browser.open(f"{self.portal.absolute_url()}/++add++Collection")
-        mgr_browser.getControl(
-            name="form.widgets.IDublinCore.title"
-        ).value = "Foo Topic"
-        mgr_browser.getControl(name="form.buttons.save").click()
-        mgr_browser.getLink(id="workflow-transition-publish").click()
-
-        foo_topic_url = self.portal["foo-topic"].absolute_url()
-        self.assertEqual(f"{self.portal.absolute_url()}/foo-topic", foo_topic_url)
-
-        # We set this topic's criteria such both above created documents appear in it.
-        # Note that I do this with the API and not with the browser (too noisy)
-
-        topic = self.portal["foo-topic"]
-        self.portal["foo-topic"].setQuery(
-            [
-                {
-                    "i": "portal_type",
-                    "o": "plone.app.querystring.operation.string.is",
-                    "v": "Document",
-                }
-            ]
-        )
-
-        mgr_browser = self.manager_browser()
-        mgr_browser.open(foo_topic_url)
-        mgr_browser.getLink("Syndication").click()
-        mgr_browser.getControl(name="form.widgets.enabled:list").value = ["selected"]
-        submit = mgr_browser.getControl(name="form.buttons.save")
-        submit.click()
-
-        feedsettings = IFeedSettings(topic)
-        self.assertTrue(feedsettings.enabled)
-
-        # Because we don't have javascript enabled, we lost feed_types, configure it again
-        feedsettings.feed_types = ("RSS",)
-
-        # Viewing the Topic
+        # Viewing the Collection
         # We can now view that topic as Member
+        member_browser = self.member_browser()
+        member_browser.open(self.foo_collection_url)
+        self.assertIn("Title1", member_browser.contents)
+        self.assertIn("Title2", member_browser.contents)
 
-        member_browser.open(foo_topic_url)
-        self.assertIn("Title 1", member_browser.contents)
-        self.assertIn("Title 2", member_browser.contents)
+        # This collection is also viewable by the anonymous user, but he should not see the
+        # 'Title2' document that's in "pending" workflow status
+        anon_browser = self.anonymous_browser()
+        anon_browser.open(self.foo_collection_url)
+        self.assertIn("Title1", anon_browser.contents)
+        self.assertNotIn("Title2", anon_browser.contents)
 
-        # This topic is also viewable by the anonymous user, but he should not see the
-        # 'Title 2' document that's in "pending" workflow status
-        anon_browser.open(foo_topic_url)
-        self.assertIn("Title 1", anon_browser.contents)
-        self.assertNotIn("Title 2", anon_browser.contents)
+        # Checking the collection syndication link
 
-        # Checking the topic syndication link
-
-        # For the anonymous user
-
-        tree = etree.HTML(anon_browser.contents)
-        links = tree.xpath("//li[@id='document-action-rss']/a")
-        self.assertEqual(len(links), 1)
-
-        anon_rss_url = links[0].attrib["href"]
-        self.assertTrue(
-            anon_rss_url.startswith(f"{self.portal.absolute_url()}/foo-topic/RSS")
-        )
-
-        # For the member::
+        # For the member
         tree = etree.HTML(member_browser.contents)
         links = tree.xpath("//li[@id='document-action-rss']/a")
         self.assertEqual(len(links), 1)
 
         member_rss_url = links[0].attrib["href"]
         self.assertTrue(
-            member_rss_url.startswith(
-                f"{self.portal.absolute_url()}/foo-topic/AUTH-RSS?token="
-            )
+            member_rss_url.startswith(f"{self.foo_collection_url}/AUTH-RSS?token=")
         )
 
-        # Resetting the personal token
+        # check is token present
+        token = member_rss_url.replace(f"{self.foo_collection_url}/AUTH-RSS?token=", "")
+        self.assertEqual(len(token), 32)
 
+        # For the anonymous user
+        tree = etree.HTML(anon_browser.contents)
+        links = tree.xpath("//li[@id='document-action-rss']/a")
+        self.assertEqual(len(links), 1)
+
+        anon_rss_url = links[0].attrib["href"]
+        self.assertTrue(anon_rss_url.startswith(f"{self.foo_collection_url}/RSS"))
+
+        # Checking the feeds of the Topic
+
+        # The anonymous feed URL
+        anon_browser.open(anon_rss_url)
+        feed_urls = self.rss_feed_urls(anon_browser.contents)
+        self.assertListEqual([self.doc1_url], feed_urls)
+
+        # And the member feed URL but as anonymous
+        anon_browser.open(member_rss_url)
+        feed_urls = self.rss_feed_urls(anon_browser.contents)
+        self.assertListEqual([self.doc1_url, self.doc2_url], feed_urls)
+
+    def test_AnonymousCantResetToken(self):
+        # Resetting the personal token
         # Checking the action link to the personal token
         # The anonymous cannot reset his token
-        # Anyway, even if the anonymous knows the URL, he cannot go there::
-        with self.assertRaises(Unauthorized):
-            anon_browser.open(f"{self.portal.absolute_url()}/@@personal-rss-token")
+        # Anyway, even if the anonymous knows the URL, he cannot go there
+        from zExceptions.unauthorized import Unauthorized
 
+        anon_browser = self.anonymous_browser()
+        with self.assertRaises(Unauthorized):
+            anon_browser.open(f"{self.portal_url}/@@personal-rss-token")
+
+    def test_MemberCanResetToken(self):
+        # Resetting the personal token
         # When the member has this link in his personal actions
-        member_browser.open(self.portal.absolute_url())
+        member_browser = self.member_browser()
+        member_browser.open(self.portal_url)
         link = member_browser.getLink("RSS Token")
-        self.assertEqual(link.url, f"{self.portal.absolute_url()}/@@personal-rss-token")
+        self.assertEqual(link.url, f"{self.portal_url}/@@personal-rss-token")
