@@ -18,7 +18,6 @@ class TestUtils(unittest.TestCase):
         self.portal = self.layer["portal"]
         self.token_mgr = getUtility(ITokenManager)
         self.bar_token = self.token_mgr.tokenForUserId(TEST_USER_ID)
-        return
 
     def test_grant_privileges(self):
         """Testing GrantPrivilegesForToken context manager"""
@@ -41,4 +40,3 @@ class TestUtils(unittest.TestCase):
         with GrantPrivilegesForToken("unknown-token", portal):
             roles = getSecurityManager().getUser().getRolesInContext(portal)
             self.assertEqual(roles, ["Anonymous"])
-        return
