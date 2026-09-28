@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: aws.authrss 1.0.0\n"
-"POT-Creation-Date: 2023-06-23 06:55+0000\n"
+"POT-Creation-Date: 2026-09-28 07:57+0000\n"
 "PO-Revision-Date: 2012-01-05 15:53+0000\n"
 "Last-Translator: Gilles Lenfant 1letter <1letter@gmx.de>\n"
 "Language-Team: Plone.de <nobody@plone.de>\n"
@@ -16,86 +16,97 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: aws.authrss\n"
 
-#: ../profiles/default/controlpanel.xml
+#: aws/authrss/profiles/default/controlpanel.xml
 msgid "Authenticated RSS"
 msgstr "Authentifiziertes RSS"
 
-#: ../configure.zcml:34
+#: aws/authrss/profiles.zcml:16
 msgid "Authenticated RSS feeds (aws.authrss)"
 msgstr "Authentifizierter RSS Feed (aws.authrss)"
 
-#: ../browser/templates/controlpanel.pt:22
+#: aws/authrss/browser/templates/controlpanel.pt:13
 msgid "Authenticated RSS tokens"
 msgstr "Authentifizierte RSS Tokens"
 
-#: ../browser/templates/controlpanel.pt:26
+#: aws/authrss/browser/templates/controlpanel.pt:17
 msgid "Authenticated users RSS tokens maintenance"
 msgstr "Wartung Authentifizierte Benutzer RSS Tokens"
 
-#: ../browser/templates/controlpanel.pt:39
+#: aws/authrss/browser/templates/controlpanel.pt:35
 msgid "Cleanup"
 msgstr "Bereinigen"
 
-#: ../configure.zcml:34
+#: aws/authrss/profiles.zcml:16
 msgid "Installs the aws.authrss package"
 msgstr "installiert das aws.authrss addon"
 
-#: ../browser/templates/personal_token.pt:12
+#: aws/authrss/browser/templates/personal_token.pt:12
 msgid "My RSS token"
 msgstr "Meine RSS tokens"
 
-#: ../profiles/default/actions.xml
+#: aws/authrss/profiles/default/actions.xml
 msgid "RSS Token"
 msgstr "RSS Token"
 
-#: ../browser/templates/controlpanel.pt:32
+#: aws/authrss/browser/templates/controlpanel.pt:28
 msgid "Remove tokens of removed users"
 msgstr "entfernt Tokens gelöschter Nutzer"
 
-#: ../browser/templates/personal_token.pt:49
+#: aws/authrss/browser/templates/personal_token.pt:49
 msgid "Reset"
 msgstr ""
 
-#: ../profiles/default/actions.xml
+#: aws/authrss/profiles/uninstall/controlpanel.xml
+msgid "Syndication"
+msgstr ""
+
+#: aws/authrss/profiles.zcml:26
+msgid "Uninstalls the aws.authrss package"
+msgstr ""
+
+#: aws/authrss/profiles/default/actions.xml
 msgid "View or reset your RSS token"
 msgstr "RSS Token anzeigen oder zurücksetzen"
 
-#: ../browser/templates/personal_token.pt:37
+#: aws/authrss/browser/templates/personal_token.pt:37
 msgid "Your token"
 msgstr "Deine Tokens"
 
+#: aws/authrss/profiles.zcml:26
+msgid "aws.authrss (uninstall)"
+msgstr ""
+
 #. Default: "Your private RSS token grants your privileges to your favorite RSS reader that may show up summary and links to contents you are allowed to view when authenticated on this site."
-#: ../browser/templates/personal_token.pt:16
+#: aws/authrss/browser/templates/personal_token.pt:16
 msgid "explain_rss_token_1"
 msgstr "Ihr privates RSS-Token gewährt Ihnen die Rechte für Ihren bevorzugten RSS-Reader, der Zusammenfassungen und Links zu Inhalten anzeigt, die Sie anzeigen dürfen, wenn Sie auf dieser Website authentifiziert sind."
 
 #. Default: "This RSS token does <strong>not</strong> reveal your login or password for this site, nor grant another user who knows your token to anything else than reading a private RSS feed."
-#: ../browser/templates/personal_token.pt:21
+#: aws/authrss/browser/templates/personal_token.pt:21
 msgid "explain_rss_token_2"
 msgstr "Dieses RSS-Token gibt <strong>nicht</strong> Ihr Login oder Passwort für diese Website preis, noch erlaubt es einem anderen Benutzer, der Ihr Token kennt, etwas anderes als das Lesen eines privaten RSS-Feeds."
 
 #. Default: "You may reset here this token at any time. If you reset this token, your next visit to your favorite RSS reader will show only summary and links to contents available to anonymous users. In order to have your private contents available in your RSS reader, you will need to edit its RSS feeds settings to this site and replace the previous token value by the one displayed below."
-#: ../browser/templates/personal_token.pt:28
+#: aws/authrss/browser/templates/personal_token.pt:28
 msgid "explain_rss_token_3"
 msgstr "Sie können dieses Token jederzeit zurücksetzen. Wenn Sie dieses Token zurücksetzen, werden bei Ihrem nächsten Besuch in Ihrem bevorzugten RSS-Reader nur noch Zusammenfassungen und Links zu Inhalten angezeigt, die für anonyme Benutzer verfügbar sind. Um Ihre privaten Inhalte in Ihrem RSS-Reader verfügbar zu machen, müssen Sie die Einstellungen für RSS-Feeds auf dieser Website bearbeiten und den vorherigen Token-Wert durch den unten angezeigten Wert ersetzen."
 
 #. Default: "Invalid token"
-#: ../browser/views.py:55
+#: aws/authrss/browser/views.py:41
 msgid "invalid_token"
 msgstr "Ungültiger Token"
 
 #. Default: "${pruned} unknown user(s) have been removed from RSS tokens registry"
-#: ../browser/views.py:95
+#: aws/authrss/browser/views.py:82
 msgid "msg_pruned_users"
 msgstr "${pruned} unbekannte(r) Benutzer wurde(n) aus der RSS-Token-Registrierung entfernt"
 
 #. Default: "Your RSS token has been changed"
-#: ../browser/views.py:77
+#: aws/authrss/browser/views.py:64
 msgid "msg_token_changed"
 msgstr "Ihr RSS-Token wurde geändert"
 
 #. Default: "You may remove the tokens of gone user clicking the button below. This will reduce a little the size of the database and speed up token &lt;-&gt; user lookup."
-#: ../browser/templates/controlpanel.pt:33
+#: aws/authrss/browser/templates/controlpanel.pt:29
 msgid "purge_explain"
 msgstr "Sie können die Token von gegangenen Benutzern entfernen, indem Sie auf die Schaltfläche unten klicken. Dadurch wird die Größe der Datenbank ein wenig reduziert und die Suche nach Token &lt;-&gt; Benutzern beschleunigt."
-

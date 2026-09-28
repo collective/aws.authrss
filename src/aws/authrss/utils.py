@@ -1,4 +1,5 @@
 """Misc utilities for aws.authrss"""
+
 from AccessControl.SecurityManagement import getSecurityManager
 from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.SecurityManagement import setSecurityManager

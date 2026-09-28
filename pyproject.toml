@@ -1,35 +1,42 @@
 # Generated from:
-# https://github.com/plone/meta/tree/master/config/default
+# https://github.com/plone/meta/tree/2.x/src/plone/meta/default
 # See the inline comments on how to expand/tweak this configuration file
+[build-system]
+requires = ["setuptools>=68.2,<83", "wheel"]
+
+
+
 [tool.towncrier]
 directory = "news/"
 filename = "CHANGES.md"
-title_format = "{version} ({project_date})"
-underlines = ["-", ""]
+start_string = "<!-- towncrier release notes start -->\n"
+title_format = "## {version} ({project_date})"
+template = "news/.changelog_template.jinja"
+underlines = ["", "", ""]
 
 [[tool.towncrier.type]]
 directory = "breaking"
-name = "Breaking changes:"
+name = "Breaking changes"
 showcontent = true
 
 [[tool.towncrier.type]]
 directory = "feature"
-name = "New features:"
+name = "New features"
 showcontent = true
 
 [[tool.towncrier.type]]
 directory = "bugfix"
-name = "Bug fixes:"
+name = "Bug fixes"
 showcontent = true
 
 [[tool.towncrier.type]]
 directory = "internal"
-name = "Internal:"
+name = "Internal"
 showcontent = true
 
 [[tool.towncrier.type]]
 directory = "documentation"
-name = "Documentation:"
+name = "Documentation"
 showcontent = true
 
 [[tool.towncrier.type]]
@@ -57,7 +64,7 @@ profile = "plone"
 ##
 
 [tool.black]
-target-version = ["py39"]
+target-version = ["py311"]
 
 ##
 # Add extra configuration options in .meta.toml:
@@ -68,7 +75,7 @@ target-version = ["py39"]
 ##
 
 [tool.codespell]
-ignore-words-list = "discreet,"
+ignore-words-list = "discreet,assertin,thet,"
 skip = "*.po,"
 ##
 # Add extra configuration options in .meta.toml:
@@ -116,6 +123,8 @@ Zope = [
   'Products.CMFCore', 'Products.CMFDynamicViewFTI',
 ]
 python-dateutil = ['dateutil']
+pytest-plone = ['pytest', 'zope.pytestlayer', 'plone.testing', 'plone.app.testing']
+ignore-packages = ['zest.pocompile','zestreleaser.towncrier', 'zest.releaser', 'zope.testrunner', 'Zope', 'Products.Five']
 
 ##
 # Add extra configuration options in .meta.toml:
@@ -125,25 +134,31 @@ python-dateutil = ['dateutil']
 #    "gitpython = ['git']",
 #    "pygithub = ['github']",
 #  ]
-#  """
 ##
 
 [tool.check-manifest]
 ignore = [
     ".editorconfig",
+    ".flake8",
     ".meta.toml",
     ".pre-commit-config.yaml",
-    "tox.ini",
-    ".flake8",
+    "dependabot.yml",
     "mx.ini",
+    "tox.ini",
 
 ]
+
 ##
 # Add extra configuration options in .meta.toml:
 #  [pyproject]
 #  check_manifest_ignores = """
 #      "*.map.js",
 #      "*.pyc",
+#  """
+#  check_manifest_extra_lines = """
+#  ignore-bad-ideas = [
+#      "some/test/file/PKG-INFO",
+#  ]
 #  """
 ##
 

@@ -17,7 +17,7 @@ tokens of removed users.
 
 ## Plays with
 
-The module supports Plone 6.0
+The module supports Plone 6.2
 
 > Conflicts with [collective.blog.feeds](http://pypi.python.org/pypi/collective.blog.feeds) because both override the same viewlet, and there's no possible conflict resolution. Sorry.
 
@@ -36,11 +36,22 @@ eggs =
   aws.authrss
 ```
 
+or pip
+
+```
+pip install aws.authrss
+```
+
+### Translate Content
+
+```
+uvx i18ndude rebuild-pot --pot ./src/aws/authrss/locales/aws.authrss.pot --create aws.authrss ./src/aws/authrss && uvx i18ndude sync --pot ./src/aws/authrss/locales/aws.authrss.pot ./src/aws/authrss/locales/*/LC_MESSAGES/aws.authrss.po
+```
 
 ### Development site
 
 ```
-python3 -m venv ./venv
+python3 -m venv ./.venv
 ```
 
 ```
@@ -48,15 +59,7 @@ source venv/bin/activate
 ```
 
 ```
-pip install mxdev zope.testrunner
-```
-
-```
-mxdev -c mx.ini
-```
-
-```
-pip install -r requirements-mxdev.txt
+pip install aws.authrss
 ```
 
 ### run a single Test
@@ -73,16 +76,12 @@ zope-testrunner -pvc --test-path=src
 
 ### Testing with tox
 
-install tox
-
 ```
-pip install tox
+uvx --with tox-uv tox -r -e test
 ```
 
-run the tests
-
 ```
-tox
+uvx --with tox-uv tox -r -e coverage
 ```
 
 ### In Site Setup

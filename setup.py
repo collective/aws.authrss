@@ -1,6 +1,5 @@
 """aws.authrss packaging utility"""
 
-from setuptools import find_packages
 from setuptools import setup
 
 import os
@@ -34,14 +33,14 @@ setup(
         "Environment :: Web Environment",
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU General Public License (GPL)",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Operating System :: OS Independent",
         "Framework :: Plone",
         "Framework :: Plone :: Addon",
-        "Framework :: Plone :: 6.0",
+        "Framework :: Plone :: 6.2",
         "Natural Language :: English",
         "Natural Language :: French",
         "Natural Language :: German",
@@ -56,31 +55,29 @@ setup(
         "Tracker": "https://github.com/collective/aws.authrss/issues",
     },
     license="GPL",
-    python_requires=">3.7",
-    packages=find_packages("src"),
-    package_dir={"": "src"},
-    namespace_packages=["aws"],
+    python_requires=">3.10",
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        "setuptools",
         "Products.GenericSetup",
-        "Plone",
+        "Zope",
+        "plone.app.layout",
+        "plone.base",
+        "plone.protect",
+        "plone.uuid",
     ],
     extras_require={
         "test": [
+            "plone.api",
+            "plone.browserlayer",
             "lxml",
-            "Plone",
             "Products.CMFCore",
             "plone.app.testing",
             "plone.testing>=5.0.0",
         ]
     },
     entry_points="""
-    # -*- Entry points: -*-
-    [z3c.autoinclude.plugin]
+    [plone.autoinclude.plugin]
     target = plone
-    [console_scripts]
-    update_locale = aws.authrss.locales.update:update_locale
     """,
 )
