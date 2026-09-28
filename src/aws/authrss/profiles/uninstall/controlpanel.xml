@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<object xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+        name="portal_controlpanel"
+        i18n:domain="aws.authrss"
+>
+  <configlet action_id="auth-rss"
+             appId="aws.authrss"
+             remove="True"
+  />
+
+  <configlet action_id="syndication"
+             appId="Plone"
+             category="plone-general"
+             condition_expr=""
+             icon_expr="string:wifi"
+             title="Syndication"
+             url_expr="string:${portal_url}/@@syndication-controlpanel"
+             visible="True"
+             i18n:attributes="title"
+  >
+    <permission>Plone Site Setup: Site</permission>
+  </configlet>
+
+</object>
