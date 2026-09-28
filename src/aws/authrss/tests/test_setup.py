@@ -1,4 +1,5 @@
 """Setup tests for this package."""
+
 from aws.authrss.testing import AWS_AUTHRSS_INTEGRATION_TESTING  # noqa: E501
 from plone import api
 from plone.app.testing import setRoles

@@ -17,3 +17,4 @@ recursive-exclude news *
 
 exclude tox.ini
 exclude *.txt
+exclude instance.yaml

@@ -1,4 +1,5 @@
 """Token manager tests"""
+
 from aws.authrss.interfaces import ITokenManager
 from aws.authrss.testing import AWS_AUTHRSS_INTEGRATION_TESTING
 from zope.component import getUtility

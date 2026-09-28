@@ -120,9 +120,9 @@ class TestUseCasesFunctionalTest(unittest.TestCase):
 
         # add a collection/topic
         mgr_browser.open(f"{self.portal_url}/++add++Collection")
-        mgr_browser.getControl(
-            name="form.widgets.IDublinCore.title"
-        ).value = "Foo Collection"
+        mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = (
+            "Foo Collection"
+        )
         mgr_browser.getControl(name="form.buttons.save").click()
         mgr_browser.getLink(id="workflow-transition-publish").click()
 
@@ -158,9 +158,9 @@ class TestUseCasesFunctionalTest(unittest.TestCase):
         # either the anonymous one or the private RSS feed for the member.
         mgr_browser.open(f"{self.foo_folder_url}/++add++Document")
         mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = "Title1"
-        mgr_browser.getControl(
-            name="form.widgets.IDublinCore.description"
-        ).value = "Description 1"
+        mgr_browser.getControl(name="form.widgets.IDublinCore.description").value = (
+            "Description 1"
+        )
         mgr_browser.getControl(name="form.buttons.save").click()
         mgr_browser.getLink(id="workflow-transition-publish").click()
         self.doc1 = self.portal.foo.title1
@@ -168,9 +168,9 @@ class TestUseCasesFunctionalTest(unittest.TestCase):
 
         mgr_browser.open(f"{self.foo_folder_url}/++add++Document")
         mgr_browser.getControl(name="form.widgets.IDublinCore.title").value = "Title2"
-        mgr_browser.getControl(
-            name="form.widgets.IDublinCore.description"
-        ).value = "Description 2"
+        mgr_browser.getControl(name="form.widgets.IDublinCore.description").value = (
+            "Description 2"
+        )
         mgr_browser.getControl(name="form.buttons.save").click()
         mgr_browser.getLink(id="workflow-transition-submit").click()
         self.doc2 = self.portal.foo.title2
