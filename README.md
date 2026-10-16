@@ -15,7 +15,7 @@ Each user may have a private token he can change whenever he wants in his person
 A control panel for site administrators gives the possibility to prune private
 tokens of removed users.
 
-## Plays with
+### Supported Plone Versions
 
 The module supports Plone 6.2
 
@@ -25,21 +25,14 @@ The module supports Plone 6.2
 
 ### Production site
 
-
-As usual in your ``zc.buildout`` configuration:
-
-```
-[instance]
-recipe = plone.recipe.zope2instance
-...
-eggs =
-  aws.authrss
-```
-
-or pip
-
 ```
 pip install aws.authrss
+```
+
+### Update Package config with plone.meta
+
+```
+uvx --from plone.meta config-package --no-commit . --branch=current
 ```
 
 ### Translate Content
@@ -60,6 +53,24 @@ source venv/bin/activate
 
 ```
 pip install aws.authrss
+```
+
+### Linting
+
+```
+uvx --with tox-uv tox -r -e lint
+```
+
+### Check dependencies
+
+```
+uvx --with tox-uv tox -r -e dependencies
+```
+
+### Check circular dependencies
+
+```
+uvx --with tox-uv tox -r -e circular
 ```
 
 ### run a single Test
