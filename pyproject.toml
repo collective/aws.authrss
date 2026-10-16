@@ -56,6 +56,7 @@ test = [
     "plone.app.testing",
     "plone.browserlayer",
     "plone.testing>=5.0.0",
+    "zope.testrunner",
 ]
 
 [project.urls]
