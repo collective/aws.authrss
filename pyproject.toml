@@ -6,6 +6,70 @@ requires = ["setuptools>=68.2,<83", "wheel"]
 
 
 
+# START-MARKER-MANUAL-CONFIG
+# Anything from here until END-MARKER-MANUAL-CONFIG
+# will be kept by plone.meta
+
+[project]
+name = "aws.authrss"
+version = "3.0.0.dev0"
+description = "Private Plone RSS feeds through a user private token"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Plone",
+    "Framework :: Plone :: 6.2",
+    "Framework :: Plone :: Addon",
+    "Natural Language :: English",
+    "Natural Language :: French",
+    "Natural Language :: German",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+license = "GPL-2.0-only"
+dynamic = ["readme"]
+requires-python = ">3.10"
+authors = [
+    {name = "Gilles Lenfant",email = "gilles.lenfant@alterway.fr"},
+]
+dependencies = [
+    "Products.GenericSetup",
+    "Zope",
+    "plone.app.layout",
+    "plone.base",
+    "plone.protect",
+    "plone.uuid",
+]
+keywords = ["plone", "rss"]
+
+[project.entry-points."plone.autoinclude.plugin"]
+target = "plone"
+
+[project.optional-dependencies]
+test = [
+    "Products.CMFCore",
+    "lxml",
+    "plone.api",
+    "plone.app.testing",
+    "plone.browserlayer",
+    "plone.testing>=5.0.0",
+    "zope.testrunner",
+]
+
+[project.urls]
+PyPI = "https://pypi.org/project/aws.authrss/"
+Source = "https://github.com/collective/aws.authrss"
+Tracker = "https://github.com/collective/aws.authrss/issues"
+Issues = "https://github.com/collective/aws.authrss/issues"
+Changelog = "https://github.com/collective/aws.authrss/blob/master/CHANGES.md"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "CHANGES.md"], content-type = "text/markdown"}
+# END-MARKER-MANUAL-CONFIG
+
 [tool.towncrier]
 directory = "news/"
 filename = "CHANGES.md"

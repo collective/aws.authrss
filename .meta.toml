@@ -22,6 +22,8 @@ test_environment_variables = """
 """
 extra_lines = """
 [coverage:run]
+include =
+    src/aws/*
 omit =
     */test*
     */upgrades/*
