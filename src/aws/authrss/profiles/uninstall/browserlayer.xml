@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layers>
+  <layer interface="aws.authrss.interfaces.IAuthRSSLayer"
+         name="aws.authrss"
+         remove="true"
+  />
+</layers>

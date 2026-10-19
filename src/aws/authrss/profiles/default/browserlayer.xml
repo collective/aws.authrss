@@ -1,5 +1,6 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <layers>
-  <layer name="aws.authrss"
-         interface="aws.authrss.interfaces.IAuthRSSLayer" />
+  <layer interface="aws.authrss.interfaces.IAuthRSSLayer"
+         name="aws.authrss"
+  />
 </layers>
